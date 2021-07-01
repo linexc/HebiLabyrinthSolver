@@ -15,7 +15,6 @@ threshold= 0.1;
 movingDirection =[move_hebi1,move_hebi2];
 move_hebi1=0;  move_hebi2=0;
 right=1; left =-1;
-
 % current position read from the camera
 p_measure = [x_measure, y_measure];
 
