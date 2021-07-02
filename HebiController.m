@@ -5,6 +5,7 @@ group = HebiLookup.newGroupFromNames('Team',{'Hebi1','Hebi2'});
 cmd = CommandStruct();
 fbk =group.getNextFeedback; 
 % rotation angle of Hebi is 10rad
+
 angle = 10;
 angle_1 = move_hebi1 * 10;
 angle_2 = move_hebi2 * 10;
