@@ -18,7 +18,7 @@ right=1; left =-1;
 % current position read from the camera
 p_measure = [x_measure, y_measure];
 
-% state estimate with Kalman filter
+%state estimate with Kalman filter
 
 %state estimate with PID
 
