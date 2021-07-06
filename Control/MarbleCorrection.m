@@ -7,7 +7,7 @@ y_old = route(k_old,2);
 x_middle = (x_old + x_next)/2;
 y_m1ddle = (y_old + y_next)/2;
 p_middle = [x_middle, y_middle];
-if (norm(p-p_middle)>threshold)
+if (norm(p_correct-p_middle)>threshold)
    if(x_middle< x_correct)
         move_hebi1= left;
     elseif (x_middle> x_correct)
