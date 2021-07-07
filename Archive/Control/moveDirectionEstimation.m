@@ -2,13 +2,13 @@
 % line
 
 % current position read from the camera
+[x_measure, y_measure]  = read_position();
+[x_measure, y_measure]  = ball_pos;
 p_measure = [x_measure, y_measure];
 
 %% state estimate with Kalman filter for single track
 % % for each track, the motion is considered as constant velocity.
 % dt = 0.01;
-% alpha1 = 0; % the spin rad for Hebi1
-% alpha2 = 0; % the spin rad for Hebi2
 % v_x = 9.81 * sin(alpha1); % "constant speed" for inclined direction
 % v_y = 9.81 * sin(alpha2); 
 % x=[0;0;v_x;v_y];
@@ -41,7 +41,7 @@ dt= 0.1;
 x = [0; 0]; 
 A = [1 0; 0 1];
 W = [dt ; dt]; 
-z = sqrt(p_measure(1)^2+p_measure(2)^2);
+z = sqrt((p_measure(1)- x_old))^2+ (p_measure(2)-y_old)^2);
 H = [p_measure(1)/z p_measure(2)/z];
 V =1 ;
 P = 1000; % State variance
@@ -85,9 +85,5 @@ if(y_next< y_correct)
     else
         move_hebi2=0;
 end
-
-
-
-
 
 
