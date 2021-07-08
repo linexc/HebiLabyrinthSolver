@@ -3,7 +3,7 @@
 function [ball_pos, ball_rad] = find_ball(img)
     % Subtract red channel from image
     diff_im = imsubtract(img(:,:,1), rgb2gray(img));
-
+    
     % Convert the resulting grayscale image into a binary image.
     bw = imbinarize(diff_im,0.27); % This boundary value differs depending on environment
 
@@ -14,7 +14,7 @@ function [ball_pos, ball_rad] = find_ball(img)
     erode = imerode(dilate, se2);
 
     % Select only areas bigger than 2000 pxs
-    erode = bwareaopen(erode,2000);
+    erode = bwareaopen(erode,200);
     % Find areas
     st = regionprops('table',erode, 'Area', 'Centroid','MajorAxisLength','MinorAxisLength');
     diameters = mean([st.MajorAxisLength st.MinorAxisLength],2);

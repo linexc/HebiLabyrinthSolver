@@ -18,7 +18,7 @@ function [erode]=image_process(img, cameraParams)
 img = undistortImage(img,cameraParams); %if you want to test with your photo, annotate this row
 %image process,turn the rgb image to binary image
 bw = im2bw(img,0.35);
-
+% erode = bw;
 % erode and dilate the binary image to reduce the noise
 se1 = strel('square', 3);
 dilate = imdilate(bw, se1);
@@ -26,5 +26,6 @@ se2 = strel('square', 3);
 erode = imerode(dilate, se2);
 
 end
+
 
 

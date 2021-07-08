@@ -16,11 +16,12 @@ videoPlayer = vision.VideoPlayer('Position', [100 100 [frameSize(2), frameSize(1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % pause 3 seconds and then get a snapshot of camera
-pause (3);
+% pause (3);
 line_frame = snapshot(cam);
 
 % through snapshot to get line position array
 [line_frame] = image_process(line_frame, cameraParams);
+line_frame = imcrop(line_frame, [55 65 480 370]);
 [sorted_pos] = extract_pos(line_frame);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -30,10 +31,26 @@ while runLoop && frameCount < 100000
     % Get the next frame.
     videoFrame = snapshot(cam);
     frameCount = frameCount + 1;
-    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+    line_frame = undistortImage(videoFrame,cameraParams);
+     videoFrame = imcrop(line_frame, [55 65 480 370]);
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % repair the distorted videoframe and get the ball position
-    videoFrame = undistortImage(videoFrame,cameraParams);
+%     videoFrame = undistortImage(videoFrame,cameraParams);
     [ball_pos, ball_rad] = find_ball(videoFrame);
+    ctr = ball_pos;
+    rad = ball_rad;
+        if size(ctr,1)==1
+        
+        % Display circle being tracked. display a circle at the tracked
+        % position, x=ctr(1,1), y=ctr(1,2), radius=rad
+        videoFrame = insertShape(videoFrame, 'Circle', [ctr(1,1),ctr(1,2),rad], ...
+            'LineWidth', 2);
+        
+        % Display tracked points. at the centriod of circle display a cross
+        % with color white. return the frame(videoFrame) with mark.
+        videoFrame = insertMarker(videoFrame, ctr, '+', 'Color', 'white');
+        end
     
     % Display the annotated video frame using the video player object.
     step(videoPlayer, videoFrame);
