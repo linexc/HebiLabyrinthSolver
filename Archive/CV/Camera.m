@@ -1,6 +1,10 @@
 % 1. initialize camera and create video player
 % 2. from camera snapshot get the line position array
 % 3. get the position of ball in real time
+group = HebiLookup.newGroupFromNames('Team',{'Hebi1','Hebi2'});
+cmd = CommandStruct();
+fbk =group.getNextFeedback; 
+load('camera_parameters.mat');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % camera initialization
@@ -23,7 +27,29 @@ line_frame = snapshot(cam);
 [line_frame] = image_process(line_frame, cameraParams);
 line_frame = imcrop(line_frame, [55 65 480 370]);
 [sorted_pos] = extract_pos(line_frame);
+route= sorted_pos; 
 
+len= length(route);
+interval = 10; %every 10 points will be considered
+%target position of this Labyrinth
+x_target = route(len,1);
+y_target = route(len,2);
+p_target = [x_target,y_target];
+% minimal distance for spining the Hebi
+threshold= 0.1;
+%move_hebi1
+movingDirection =[move_hebi1,move_hebi2];
+move_hebi1=0;  move_hebi2=0;
+% rotation direction 
+right=1; left =-1;
+up = 1; down = -1;
+% rotation angle
+alpha1 = 2; %kurz
+alpha2= 2; % lang
+
+% the target of current segment
+k_next= 1+interval;
+k_old = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 runLoop = true;
 frameCount = 2;

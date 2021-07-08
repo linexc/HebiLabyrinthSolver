@@ -1,8 +1,7 @@
-%This scrpit can estimate the position on the plane, while the marble moving along the
-% line
+%This scrpit can estimate the position on the plane, while the marble moving along the line
 
 % current position read from the camera
-[x_measure, y_measure]  = ball_pos;
+[x_measure, y_measure]  = read_position();
 p_measure = [x_measure, y_measure];
 
 %% state estimate with Kalman filter for single track
@@ -72,15 +71,15 @@ y_next = route(k_next,2);
 p_next =[x_next,y_next];
 if(x_next< x_correct)
         move_hebi1= left;
-    elseif (x_next> x_correct)
+ elseif (x_next> x_correct)
         move_hebi1= right;
     else 
         move_hebi1=0;
 end
 if(y_next< y_correct)
-        move_hebi2= down;
-    elseif (y_next> y_correct)
         move_hebi2= up;
+    elseif (y_next> y_correct)
+        move_hebi2= down;
     else
         move_hebi2=0;
 end

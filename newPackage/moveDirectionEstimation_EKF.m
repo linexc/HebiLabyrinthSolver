@@ -71,15 +71,15 @@ y_next = route(k_next,2);
 p_next =[x_next,y_next];
 if(x_next< x_correct)
         move_hebi1= left;
-    elseif (x_next> x_correct)
+ elseif (x_next> x_correct)
         move_hebi1= right;
     else 
         move_hebi1=0;
 end
 if(y_next< y_correct)
-        move_hebi2= down;
-    elseif (y_next> y_correct)
         move_hebi2= up;
+    elseif (y_next> y_correct)
+        move_hebi2= down;
     else
         move_hebi2=0;
 end

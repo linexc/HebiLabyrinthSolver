@@ -4,7 +4,7 @@
 % differents of y value between points are small, so try to compute the
 % mean y value of those points.
 
-function [pos] = extract_pos(erode)
+function [sorted_pos,pos] = extract_pos(erode,start_position)  %input is processed image, output is the position array of line
 %extract the coordinate of line
 pos = [];       % position of points on the line, unsorted
 count = 0;      % count how much y position were summed
@@ -65,9 +65,9 @@ pos_copy = pos;
 
 % start point, will through camera determine
 % for the picture test3 as well as test3-min,test3-min2
- current_pos = [50, 165];
+ current_pos = start_position;
 % for test4
-% current_pos = [840,30];
+% current_pos = [82,429];
 
 sorted_pos = [];      % the array after sort
 current_row = 1;      
@@ -109,7 +109,7 @@ for count = 1:length(pos_copy)
     % be the point next current point, but because of the large numbers of
     % point and the curve line, there will exist some points with the same
     % x coordinate but different y coordinate.
-    for i = -20:20
+    for i = -10:10
         %prevent the index beyond boundary
         if current_row + i < smallest_index
             j = smallest_index - current_row;

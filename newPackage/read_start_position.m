@@ -1,9 +1,6 @@
-% a function to find the position of red ball
-
-function [ball_pos, ball_rad] = find_ball(img)
-    % Subtract red channel from image
+function [start_position] = read_start_position(img)
     diff_im = imsubtract(img(:,:,1), rgb2gray(img));
-
+    
     % Convert the resulting grayscale image into a binary image.
     bw = imbinarize(diff_im,0.27); % This boundary value differs depending on environment
 
@@ -14,7 +11,7 @@ function [ball_pos, ball_rad] = find_ball(img)
     erode = imerode(dilate, se2);
 
     % Select only areas bigger than 2000 pxs
-    erode = bwareaopen(erode,2000);
+    erode = bwareaopen(erode,200);
     % Find areas
     st = regionprops('table',erode, 'Area', 'Centroid','MajorAxisLength','MinorAxisLength');
     diameters = mean([st.MajorAxisLength st.MinorAxisLength],2);
@@ -22,6 +19,5 @@ function [ball_pos, ball_rad] = find_ball(img)
     % Ensure that selected area is a circular object
     sel = ([st.Area] > 0.9*(pi*rad.^2)) & ([st.Area] < 1.1*(pi*rad.^2));
     st = st(sel,:);
-    ball_rad = rad(sel);
-    ball_pos = st.Centroid;
+    start_position = st.Centroid;
 end

@@ -10,9 +10,9 @@ if (norm(p_correct-p_middle)>threshold)
         move_hebi1=0;
     end
     if(y_m1ddle< y_correct)
-            move_hebi2= down;
-        elseif (y_m1ddle> y_correct)
             move_hebi2= up;
+        elseif (y_m1ddle> y_correct)
+            move_hebi2= down;
         else
             move_hebi2=0;
     end
