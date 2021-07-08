@@ -59,8 +59,6 @@ P= A*P*A' +W*Q*W';
 x_correct= x(1);
 y_correct =x(2);
 
-%% state estimate with PID
-%todo if need
 %% 
 % corrected value of current position
 p_correct = [x_correct, y_correct];

@@ -1,9 +1,9 @@
 %This scrpit can estimate the position on the plane, while the marble moving along the line
 
 % current position read from the camera
-p_measure = [ball_pos(1), ball_pos(2)];
+p_measure = ball_pos;
 x_measure = p_measure(1);
-y_measure= p_measure(2);
+y_measure = p_measure(2);
 %% Regulation with PID
 %t = fbk.time;
 %dt = t- told;
@@ -40,8 +40,8 @@ else
     y2 = -1;
 end
 
-
-p_correct = [y1, y2];
+% distance from current position to the target
+remainDistance = [y1, y2];
 
 eold_x = e_x;
 eold_y = e_y;

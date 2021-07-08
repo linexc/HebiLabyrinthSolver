@@ -11,8 +11,9 @@ count = 0;      % count how much y position were summed
 y_pos_sum = 0;  % the total y position with the same x coordinate
 extend_pixel_flag = false;  % a flag to determin if there still exists points far away from the current point,
                             % false == not, 
-[x,y] = size(erode);                            
-% double 'for' loop to check every point.
+                            
+[x,y,~] = size(erode);    
+% double 'for' loop to check every pixel.
 for i=1:x
     for j = 1:y
         % if the current position is not on the line, skip
@@ -29,7 +30,7 @@ for i=1:x
         extend_pixel_flag = false;
         
         % if there exist at least one black point in next 50 pixels in y
-        % dirction set the flag to true, prevent the 'y_pos_sum' and 'count' reset
+        % direction set the flag to true, prevent the 'y_pos_sum' and 'count' reset
         for extend_pixel = 1:50
             if j + extend_pixel > y           % prevent out of index 
                 break;
@@ -42,7 +43,7 @@ for i=1:x
         % if there is no more black point in next 50 points, compute the
         % mean y value to get a central point.
         if extend_pixel_flag == false
-            pos = [pos; [i, y_pos_sum/count]];
+            pos = [pos; [i, y_pos_sum/count]]; % why to calculate average? 
             y_pos_sum =0;
             count = 0;
         end
@@ -99,7 +100,8 @@ for count = 1:length(pos_copy)
         sorted_pos = [sorted_pos; current_pos];
         continue;
     end
-    % reset the ssmallest_distance and try to sort the line
+    
+    % reset the smallest_distance and try to sort the line
     smallest_distance = inf;
     smallest_index = 1;
     biggest_index = length(pos_copy);
