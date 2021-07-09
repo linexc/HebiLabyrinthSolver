@@ -16,7 +16,7 @@ group.send('SafetyParams', safetyParams);
 %% set board horizontal
 cmd.position = [0, 0];
 group.send(cmd);
-pause(3);
+pause(1);
 
 % Camera Initialization
 cam = ipcam('http://192.168.0.8/mjpg/video.mjpg','admin','1234');
@@ -72,9 +72,9 @@ while true
     
     
     %% compute error
-    K_p_x = .25;%1/3;
-    K_i_x = .9;%1/2;
-    K_d_x = .001;
+    K_p_x = .17;%.17;
+    K_i_x = 2.;
+    K_d_x = .00;
     error_old_x = error_x;
     size(ctr)
     if (size(ctr,1) ~= 0)
@@ -82,26 +82,25 @@ while true
     end
     error_sum_x = error_sum_x + K_i_x*dt*error_x;
     theta_lang = K_p_x*error_x + error_sum_x + K_d_x*(error_old_x - error_x)/dt;
-%     if (error_x < 1e-3)
-%         error_sum_x = 0.0;
-%     end
+    if (abs(error_x) < 10)
+        error_sum_x = 0.0;
+    end
          
-    K_p_y = .5;%1/2;%1/3;
-    K_i_y = .8;%1/5;
-    K_d_y = .001;
+    K_p_y = .17;%.17;
+    K_i_y = 2.;
+    K_d_y = .000;
     error_old_y = error_y;
     if (size(ctr,1) ~= 0)
         error_y = board_center_pos(2) - ctr(2);
     end
     error_sum_y = error_sum_y + K_i_y*dt*error_y;
     theta_kurz = K_p_y*error_y + error_sum_y + K_d_y*(error_old_y - error_y)/dt;
-%     if (error_y < 1e-3)
-%         error_sum_y = 0.0;
-%     end
+    if (abs(error_y) < 10)
+        error_sum_y = 0.0;
+    end
     
     %% map errors to thetas
     theta_kurz_send = map_error_y(theta_kurz);
-%     theta_kurz_send = 0.2;
     theta_lang_send = map_error_x(theta_lang);
     
     
@@ -116,7 +115,7 @@ while true
     cmd.position = [theta_kurz_send, theta_lang_send];
     group.send(cmd);
     
-    waitfor(r);
+    waitfor(r); % ratecontroll
 end
     
 
