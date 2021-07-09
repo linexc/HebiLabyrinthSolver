@@ -1,10 +1,6 @@
 % 1. initialize camera and create video player
 % 2. from camera snapshot get the line position array
 % 3. get the position of ball in real time
-group = HebiLookup.newGroupFromNames('Team',{'Hebi1','Hebi2'});
-cmd = CommandStruct();
-fbk =group.getNextFeedback; 
-load('camera_parameters.mat');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % camera initialization
@@ -22,50 +18,38 @@ videoPlayer = vision.VideoPlayer('Position', [100 100 [frameSize(2), frameSize(1
 % pause 3 seconds and then get a snapshot of camera
 % pause (3);
 line_frame = snapshot(cam);
-
+find_ball_max_lang = 480;
+find_ball_min_lang = 45;
+find_ball_max_kurz = 370;
+find_ball_min_kurz = 65;
 % through snapshot to get line position array
 [line_frame] = image_process(line_frame, cameraParams);
-line_frame = imcrop(line_frame, [55 65 480 370]);
-[sorted_pos] = extract_pos(line_frame);
-route= sorted_pos; 
+line_frame = imcrop(line_frame, [find_ball_min_lang, find_ball_min_kurz, find_ball_max_lang, find_ball_max_kurz]);% 50, 65, 480, 370
+[sorted_pos,pos] = extract_pos(line_frame);
 
-len= length(route);
-interval = 10; %every 10 points will be considered
-%target position of this Labyrinth
-x_target = route(len,1);
-y_target = route(len,2);
-p_target = [x_target,y_target];
-% minimal distance for spining the Hebi
-threshold= 0.1;
-%move_hebi1
-movingDirection =[move_hebi1,move_hebi2];
-move_hebi1=0;  move_hebi2=0;
-% rotation direction 
-right=1; left =-1;
-up = 1; down = -1;
-% rotation angle
-alpha1 = 2; %kurz
-alpha2= 2; % lang
-
-% the target of current segment
-k_next= 1+interval;
-k_old = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 runLoop = true;
 frameCount = 2;
+frame_max_lang = 560;
+frame_min_lang = 0;
+frame_max_kurz = 460;
+frame_min_kurz = 0;
 while runLoop && frameCount < 100000
     % Get the next frame.
     videoFrame = snapshot(cam);
     frameCount = frameCount + 1;
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
-    line_frame = undistortImage(videoFrame,cameraParams);
-     videoFrame = imcrop(line_frame, [55 65 480 370]);
+    videoFrame = undistortImage(videoFrame,cameraParams);
+    videoFrame = imcrop(videoFrame, [frame_min_lang frame_min_kurz frame_max_lang frame_max_kurz]);
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % repair the distorted videoframe and get the ball position
 %     videoFrame = undistortImage(videoFrame,cameraParams);
     [ball_pos, ball_rad] = find_ball(videoFrame);
     ctr = ball_pos;
     rad = ball_rad;
+    ball_x = ball_pos(1,1) * (find_ball_max_lang - find_ball_min_lang) / (frame_max_lang - frame_min_lang);
+    ball_y = ball_pos(1,2) * (find_ball_max_kurz - find_ball_min_kurz) / (frame_max_kurz - frame_min_kurz);
+    ball_pos = [ball_x, ball_y];
         if size(ctr,1)==1
         
         % Display circle being tracked. display a circle at the tracked
@@ -77,47 +61,6 @@ while runLoop && frameCount < 100000
         % with color white. return the frame(videoFrame) with mark.
         videoFrame = insertMarker(videoFrame, ctr, '+', 'Color', 'white');
         end
-    
-    x_old = route(k_old,1);
-    y_old = route(k_old,2);
-    % middle point of the segment 
-    x_middle = (x_old + x_next)/2;
-    y_m1ddle = (y_old + y_next)/2;
-    p_middle = [x_middle, y_middle];
-    
-    moveDirectionEstimation;
-    angle_1 = move_hebi1 * alpha1;
-    angle_2 = move_hebi2 * alpha2;
-    cmd.position = [angle_1,angle_2];
-    group.send(cmd);
-    
-    % after 1 sec, the Hebi should spin to make the plate horizontal, in order
-    % to make sure the marble with a low speed while closing to the target
-    pause(0.1);
-    angle_1 = 0;
-    angle_2 = 0;
-    cmd.position = [angle_1,angle_2];
-    group.send(cmd);
-    
-    MarbleCorrection;
-    angle_1 = move_hebi1 * alpha1;
-    angle_2 = move_hebi2 * alpha2;
-    cmd.position = [angle_1,angle_2];
-    group.send(cmd);
-    
-    % after 1 sec, the Hebi should spin to make the plate horizontal, in order
-    % to make sure the marble with a low speed while closing to the target
-    pause(0.1);
-    angle_1 = 0;
-    angle_2 = 0;
-    cmd.position = [angle_1,angle_2];
-    group.send(cmd);
-    
-    % update target
-    if (norm(p_correct-p_next)<threshold)
-        k_old= k_next;
-        k_next=k_next+interval;
-    end
     
     % Display the annotated video frame using the video player object.
     step(videoPlayer, videoFrame);
