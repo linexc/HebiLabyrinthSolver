@@ -1,13 +1,20 @@
 %clear; close all;
+addpath('../../../hebi/');
 
 % Hebi Initialization
 group = HebiLookup.newGroupFromNames('Team1',{'kurz','lang'});
 cmd = CommandStruct();
 fbk =group.getNextFeedback; 
 
+%% safety parameters
+safetyParams = group.getSafetyParams();
+safetyParams.positionLimitStrategy = [3 3]; % damped spring
+safetyParams.positionMinLimit = [-1.4 -1.7];
+safetyParams.positionMaxLimit = [1.4 1.7];
+group.send('SafetyParams', safetyParams);
+
 %% set board horizontal
-offset = [3.47, 3.85];
-cmd.position = [offset(1), offset(2)];
+cmd.position = [0, 0];
 group.send(cmd);
 pause(3);
 
