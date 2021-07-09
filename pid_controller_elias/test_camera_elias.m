@@ -68,27 +68,27 @@ while true
     
     
     %% compute error
-    K_p_x = 1/8;%1/3;
-    K_i_x = 1/2;%1/2;
-    K_d_x = 100;
+    K_p_x = .25;%1/3;
+    K_i_x = .8;%1/2;
+    K_d_x = .0001;
     error_old_x = error_x;
     error_x = board_center_pos(1) - ctr(1);
     error_sum_x = error_sum_x + K_i_x*dt*error_x;
     theta_lang = K_p_x*error_x + error_sum_x + K_d_x*(error_old_x - error_x)/dt;
-    if (error_x < 1e-3)
-        error_sum_x = 0.0;
-    end
-        
-    K_p_y = 1/7;%1/3;
-    K_i_y = 1/2;%1/5;
-    K_d_y = 100;
+%     if (error_x < 1e-3)
+%         error_sum_x = 0.0;
+%     end
+         
+    K_p_y = .5;%1/2;%1/3;
+    K_i_y = .7;%1/5;
+    K_d_y = .0001;
     error_old_y = error_y;
     error_y = board_center_pos(2) - ctr(2);
     error_sum_y = error_sum_y + K_i_y*dt*error_y;
     theta_kurz = K_p_y*error_y + error_sum_y + K_d_y*(error_old_y - error_y)/dt;
-    if (error_y < 1e-3)
-        error_sum_y = 0.0;
-    end
+%     if (error_y < 1e-3)
+%         error_sum_y = 0.0;
+%     end
     
     %% map errors to thetas
     theta_kurz_send = map_error_y(theta_kurz);
@@ -98,8 +98,9 @@ while true
     
     %% debug
     error = [error_x, error_y]
-    theta = [theta_lang, theta_kurz]
+    theta = [theta_lang, theta_kurz];
     theta_send = [theta_lang_send, theta_kurz_send]
+    K_d = [K_d_x*(error_old_x - error_x)/dt K_d_y*(error_old_y - error_y)/dt]
 
     
     %% set actuators
@@ -111,9 +112,11 @@ end
     
 
 function theta_l = map_error_x(e_x)
-    theta_l = 3.85 + 3.85/207*e_x;
+%     theta_l = 1.7/220*e_x;
+    theta_l = 1.7/230*e_x;
 end
 
 function theta_k = map_error_y(e_y)
-    theta_k = 3.45 - 3.45/175*e_y;
+%     theta_k = -1.4/175*e_y;
+    theta_k = -1.4/180*e_y;
 end
