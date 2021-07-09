@@ -1,4 +1,4 @@
-%clear; close all;
+clear; close all;
 addpath('../../../hebi/');
 
 % Hebi Initialization
@@ -22,7 +22,10 @@ pause(3);
 cam = ipcam('http://192.168.0.8/mjpg/video.mjpg','admin','1234');
 % Capture one frame to get its size.
 videoFrame = snapshot(cam);
-% videoFrame = videoFrame(80:400,107:532,1:3);
+% undistor image
+load('camera_parameters.mat')
+videoFrame = undistortImage(videoFrame,cameraParams);
+videoFrame = videoFrame(1:460,10:550,1:3);
 frameSize = size(videoFrame);
 % Create the video player object.
 videoPlayer = vision.VideoPlayer('Position', [100 100 [frameSize(2), frameSize(1)]+30]);
@@ -50,7 +53,8 @@ while true
     %% get ball position from camera
     % Get the next frame.
     videoFrame = snapshot(cam);
-%     videoFrame = videoFrame(80:400,107:532);
+    videoFrame = undistortImage(videoFrame,cameraParams);
+    videoFrame = videoFrame(1:460,10:550,1:3);
     frameCount = frameCount + 1;
     % Search for circles in current frame
     [ctr,rad] = get_ball_position(videoFrame);
@@ -69,10 +73,13 @@ while true
     
     %% compute error
     K_p_x = .25;%1/3;
-    K_i_x = .8;%1/2;
-    K_d_x = .0001;
+    K_i_x = .9;%1/2;
+    K_d_x = .001;
     error_old_x = error_x;
-    error_x = board_center_pos(1) - ctr(1);
+    size(ctr)
+    if (size(ctr,1) ~= 0)
+        error_x = board_center_pos(1) - ctr(1);
+    end
     error_sum_x = error_sum_x + K_i_x*dt*error_x;
     theta_lang = K_p_x*error_x + error_sum_x + K_d_x*(error_old_x - error_x)/dt;
 %     if (error_x < 1e-3)
@@ -80,10 +87,12 @@ while true
 %     end
          
     K_p_y = .5;%1/2;%1/3;
-    K_i_y = .7;%1/5;
-    K_d_y = .0001;
+    K_i_y = .8;%1/5;
+    K_d_y = .001;
     error_old_y = error_y;
-    error_y = board_center_pos(2) - ctr(2);
+    if (size(ctr,1) ~= 0)
+        error_y = board_center_pos(2) - ctr(2);
+    end
     error_sum_y = error_sum_y + K_i_y*dt*error_y;
     theta_kurz = K_p_y*error_y + error_sum_y + K_d_y*(error_old_y - error_y)/dt;
 %     if (error_y < 1e-3)
