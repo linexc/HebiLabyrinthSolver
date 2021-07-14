@@ -1,4 +1,4 @@
-function [ctr,rad] = find_circular_object(frm)
+function [ctr,rad] = get_ball_position(frm)
 % Finds circular objects in frame
 
 % Subtract red channel from image
@@ -10,7 +10,7 @@ bw = imbinarize(diff_im,0.26); % This boundary value differs depending on enviro
 % Select only areas bigger than 2000 pxs
 bw = bwareaopen(bw,20);
 bw = imfill(bw,'holes');
-imshow(bw);
+% imshow(bw);
 % Find areas
 st = regionprops('table',bw, 'Area', 'Centroid','MajorAxisLength','MinorAxisLength');
 diameters = mean([st.MajorAxisLength st.MinorAxisLength],2);

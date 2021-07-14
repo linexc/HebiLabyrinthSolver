@@ -1,7 +1,7 @@
-clear; close all;
+clear; clf; %close all;
 addpath('../../../hebi/');
 
-% Hebi Initialization
+%% Hebi Initialization
 group = HebiLookup.newGroupFromNames('Team1',{'kurz','lang'});
 cmd = CommandStruct();
 fbk =group.getNextFeedback; 
@@ -18,7 +18,7 @@ cmd.position = [0, 0];
 group.send(cmd);
 pause(1);
 
-% Camera Initialization
+%% Camera Initialization
 cam = ipcam('http://192.168.0.8/mjpg/video.mjpg','admin','1234');
 % Capture one frame to get its size.
 videoFrame = snapshot(cam);
@@ -31,10 +31,19 @@ frameSize = size(videoFrame);
 % videoPlayer = vision.VideoPlayer('Position', [100 100 [frameSize(2), frameSize(1)]+30]);
 
 
-% Desired ball position
+%% Desired ball position (center of board)
 board_center_pos = [282 246];
+% coordinates according to pixel of camera
+% (97|50) ------------- (530|85)   --> (x-axis)
+%  |                           |
+%  |                           |
+%  |                           |
+% (66|400) ------------ (497|429)
+%  
+%  |
+%  v (y-axis)
 
-% preallocation
+%% preallocation
 frameCount = 0;
 error_x = 0.0;
 error_old_x = 0.0;
@@ -44,9 +53,18 @@ error_y = 0.0;
 error_old_y = 0.0;
 error_sum_y = 0.0;
 theta_lang = 0.0;
+record= [];
+error_x_dir= [];
+d_evo = []; % evolution of d summand in PID summation
+i_evo = []; % evolution of i summand in PID summation
+pos_x = [];
+pos_y = [];
+stell_lang = [];
+t = 0;
 
-% execute loop at fixed frequency
-freq = 1000; %Hz
+
+%% execute loop at fixed frequency
+freq = 50; %Hz
 r = rateControl(freq);    % 10 Hz
 dt = 1/freq;    
 while true 
@@ -58,6 +76,29 @@ while true
     frameCount = frameCount + 1;
     % Search for circles in current frame
     [ctr,rad] = get_ball_position(videoFrame);
+%     record = [record; ctr]; % record ball position for plotting
+    if (size(ctr,1) ~= 0) % save positions in arrays
+        pos_x = [pos_x, ctr(1)];
+        pos_y = [pos_y, ctr(2)];
+    end
+    %% visualize ball position
+    figure(1);
+    hold on;
+    subplot(4,1,1)
+        plot(pos_x, pos_y)
+        title('x-y pos')
+    subplot(4,1,2)
+        plot(pos_x)
+        title('x-pos over samples')
+    subplot(4,1,3)    
+        plot(stell_lang)
+        title('theta-send over samples')
+    subplot(4,1,4)
+        plot(pos_y)
+        title('y-pos over samples')
+    hold off;
+   
+
     if size(ctr,1)==1
         % Display circle being tracked.
         videoFrame = insertShape(videoFrame, 'Circle', [ctr(1,1),ctr(1,2),rad], ...
@@ -73,23 +114,35 @@ while true
     
     %% PID Controller
     %% lange Seite regler
-    K_p_x = 0.2;%.17;
-    K_i_x = 0.1%0.8;
-    K_d_x = 0.0004;
+    K_p_x = 0.10;%.17;
+    K_i_x = 0.0002;%0.8;
+    K_d_x = 0.003;
     
     size(ctr);
     if (size(ctr,1) ~= 0)
         error_x = board_center_pos(1) - ctr(1);
     end
 
-    error_sum_x = error_sum_x + error_x;
-    theta_lang = K_p_x*error_x + K_i_x*dt*error_sum_x + K_d_x*(error_x - error_old_x)/dt
+    error_sum_x = error_sum_x + K_i_x*error_x
+    
+    theta_lang = K_p_x*error_x + error_sum_x + K_d_x*(error_x - error_old_x)/dt
+    if (abs(error_x) < 10)
+        error_sum_x = 0.0;
+    end
+    
+    
+    P = K_p_x*error_x
+    I = error_sum_x
+    D = K_d_x*(error_x - error_old_x)/dt
     error_old_x = error_x;
-
+    
+    error_x_dir = [error_x_dir, error_x];
+    d_evo = [d_evo; D];
+    i_evo = [i_evo; error_sum_x];
         %% kurze Seite regler
     K_p_y = 0.3;%.17;
-    K_i_y = 0.8%0.8;
-    K_d_y = 0.0004;
+    K_i_y = 0.8;%0.8;
+    K_d_y = 0.0006;
     
     size(ctr);
     if (size(ctr,1) ~= 0)
@@ -102,12 +155,14 @@ while true
 
     
     %% map errors to thetas
-    theta_kurz_send = map_error_y(theta_kurz);
+    theta_kurz_send = 0;%map_error_y(theta_kurz);
     theta_lang_send = map_error_x(theta_lang);
+    stell_lang = [stell_lang, theta_lang_send]; 
+
 
     %% debug
     error = [error_x, error_y]
-    theta = [theta_lang, theta_kurz];
+    theta = [theta_lang, theta_kurz]
     theta_send = [theta_lang_send, theta_kurz_send]
     ctr
     
@@ -115,6 +170,7 @@ while true
     cmd.position = [theta_kurz_send, theta_lang_send];
     group.send(cmd);
     
+    t = t+dt;
     waitfor(r); % ratecontroll
 end
     
