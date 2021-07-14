@@ -28,11 +28,11 @@ videoFrame = undistortImage(videoFrame,cameraParams);
 videoFrame = videoFrame(1:460,10:550,1:3);
 frameSize = size(videoFrame);
 % Create the video player object.
-videoPlayer = vision.VideoPlayer('Position', [100 100 [frameSize(2), frameSize(1)]+30]);
+% videoPlayer = vision.VideoPlayer('Position', [100 100 [frameSize(2), frameSize(1)]+30]);
 
 
 % Desired ball position
-board_center_pos = [299.6 250.7];
+board_center_pos = [282 246];
 
 % preallocation
 frameCount = 0;
@@ -66,50 +66,50 @@ while true
         videoFrame = insertMarker(videoFrame, ctr, '+', 'Color', 'white');
     end
     % Display the annotated video frame using the video player object.
-    step(videoPlayer, videoFrame);
+%     step(videoPlayer, videoFrame);
     % Check whether the video player window has been closed.
-    runLoop = isOpen(videoPlayer);
+%     runLoop = isOpen(videoPlayer);
     
     
-    %% compute error
-    K_p_x = .17;%.17;
-    K_i_x = 2.;
-    K_d_x = .00;
-    error_old_x = error_x;
-    size(ctr)
+    %% PID Controller
+    %% lange Seite regler
+    K_p_x = 0.2;%.17;
+    K_i_x = 0.1%0.8;
+    K_d_x = 0.0004;
+    
+    size(ctr);
     if (size(ctr,1) ~= 0)
         error_x = board_center_pos(1) - ctr(1);
     end
-    error_sum_x = error_sum_x + K_i_x*dt*error_x;
-    theta_lang = K_p_x*error_x + error_sum_x + K_d_x*(error_old_x - error_x)/dt;
-    if (abs(error_x) < 10)
-        error_sum_x = 0.0;
-    end
-         
-    K_p_y = .17;%.17;
-    K_i_y = 2.;
-    K_d_y = .000;
-    error_old_y = error_y;
+
+    error_sum_x = error_sum_x + error_x;
+    theta_lang = K_p_x*error_x + K_i_x*dt*error_sum_x + K_d_x*(error_x - error_old_x)/dt
+    error_old_x = error_x;
+
+        %% kurze Seite regler
+    K_p_y = 0.3;%.17;
+    K_i_y = 0.8%0.8;
+    K_d_y = 0.0004;
+    
+    size(ctr);
     if (size(ctr,1) ~= 0)
         error_y = board_center_pos(2) - ctr(2);
     end
-    error_sum_y = error_sum_y + K_i_y*dt*error_y;
-    theta_kurz = K_p_y*error_y + error_sum_y + K_d_y*(error_old_y - error_y)/dt;
-    if (abs(error_y) < 10)
-        error_sum_y = 0.0;
-    end
+
+    error_sum_y = error_sum_y + error_y;
+    theta_kurz = K_p_y*error_y + K_i_y*dt*error_sum_y + K_d_y*(error_y - error_old_y)/dt
+    error_old_y = error_y;
+
     
     %% map errors to thetas
     theta_kurz_send = map_error_y(theta_kurz);
     theta_lang_send = map_error_x(theta_lang);
-    
-    
+
     %% debug
     error = [error_x, error_y]
     theta = [theta_lang, theta_kurz];
     theta_send = [theta_lang_send, theta_kurz_send]
-    K_d = [K_d_x*(error_old_x - error_x)/dt K_d_y*(error_old_y - error_y)/dt]
-
+    ctr
     
     %% set actuators
     cmd.position = [theta_kurz_send, theta_lang_send];
@@ -120,11 +120,14 @@ end
     
 
 function theta_l = map_error_x(e_x)
-%     theta_l = 1.7/220*e_x;
     theta_l = 1.7/230*e_x;
+%     theta_l = 1.13*tan(1/200*e_x);
 end
 
 function theta_k = map_error_y(e_y)
-%     theta_k = -1.4/175*e_y;
-    theta_k = -1.4/180*e_y;
+    if e_y > 0
+        theta_k = -1.4/216*e_y;
+    else
+        theta_k = -1.4/195*e_y;
+    end
 end
