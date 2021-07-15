@@ -131,7 +131,7 @@ while (k_next<1)
     %step(videoPlayer, videoFrame);
     %% compute error
     % lange Seite regler for x axis 
-    K_p_x = 0.2;%.17;
+    K_p_x = 0.2;
     K_i_x = 0.8;
     K_d_x = 0.002;
     if (size(ctr,1) ~= 0)
@@ -142,7 +142,7 @@ while (k_next<1)
     error_old_x = error_x;
     
     % kurze Seite regler for y axis
-    K_p_y = 0.2;%.17;
+    K_p_y = 0.2;
     K_i_y = 0.9;
     K_d_y = 0.0009;
     if (size(ctr,2) ~= 0)
